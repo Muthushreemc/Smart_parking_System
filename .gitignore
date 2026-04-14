@@ -1,0 +1,14 @@
+# Python cache
+__pycache__/
+*.pyc
+
+# Virtual environments
+venv/
+env/
+smart_parking_system/
+
+# Models
+*.pt
+
+# VS Code
+.vscode/
