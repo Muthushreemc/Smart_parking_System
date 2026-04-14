@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Smart Parking</title>
+
+<style>
+body {
+    font-family: Arial;
+    background:#0f172a;
+    color:white;
+    text-align:center;
+}
+
+.grid {
+    display:grid;
+    grid-template-columns: repeat(4,100px);
+    gap:15px;
+    justify-content:center;
+}
+
+.slot {
+    width:100px;
+    height:100px;
+    border-radius:10px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    cursor:pointer;
+}
+
+.free { background:green; }
+.reserved { background:orange; }
+.occupied { background:red; }
+
+button {
+    margin-top:5px;
+}
+</style>
+
+</head>
+
+<body>
+
+<a href="/" style="color:cyan;">⬅ Back</a>
+
+<h1>🚗 Reservation</h1>
+
+<p>Total: {{total}}</p>
+<p>Reserved: <span id="reservedCount">0</span></p>
+<p>Free: <span id="freeCount">{{total}}</span></p>
+
+<div class="grid" id="grid"></div>
+
+<script>
+let total = {{total}};
+
+// create slots
+for(let i=0;i<total;i++){
+    let div=document.createElement("div");
+    div.className="slot free";
+    div.id="slot"+i;
+    div.innerText=i;
+
+    div.onclick=()=>{
+        if(div.classList.contains("free")){
+            reserve(i);
+        }
+    };
+
+    document.getElementById("grid").appendChild(div);
+}
+
+// reserve
+function reserve(id){
+    let name = prompt("Enter name");
+    let vehicle = prompt("Vehicle number");
+
+    fetch("/reserve",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({slot:id,name,vehicle})
+    })
+    .then(res=>res.json())
+    .then(data=>{
+        if(data.status==="occupied"){
+            alert("Slot occupied!");
+        }
+        updateUI();
+    });
+}
+
+// cancel
+function cancelSlot(event,id){
+    event.stopPropagation();
+    fetch("/cancel/"+id).then(()=>updateUI());
+}
+
+// update
+function updateUI(){
+    fetch("/status")
+    .then(res=>res.json())
+    .then(data=>{
+        let reserved=data.reserved;
+        let occupied=data.occupied;
+
+        for(let i=0;i<total;i++){
+            let s=document.getElementById("slot"+i);
+
+            if(occupied.includes(i)){
+                s.className="slot occupied";
+                s.innerHTML=i;
+            }
+            else if(reserved.includes(i)){
+                s.className="slot reserved";
+                s.innerHTML=i+"<button onclick='cancelSlot(event,"+i+")'>Cancel</button>";
+            }
+            else{
+                s.className="slot free";
+                s.innerHTML=i;
+            }
+        }
+
+        document.getElementById("reservedCount").innerText=reserved.length;
+        document.getElementById("freeCount").innerText=total-reserved.length;
+    });
+}
+
+setInterval(updateUI,2000);
+</script>
+
+</body>
+</html>
