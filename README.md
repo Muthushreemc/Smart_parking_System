@@ -1,7 +1,3 @@
-Here’s a **clean, professional README.md content** you can directly use for your project 👇
-
----
-
 # 🚗 Smart Parking Assistant with Reservation System
 
 ## 📌 Overview
